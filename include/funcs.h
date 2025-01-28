@@ -5,7 +5,7 @@
 #include "mesh.h"
 
 namespace funcs {
-	unsigned int TextureFromFile(const std::string& path, std::string directory);
+	unsigned int TextureFromFile(const std::string& path, std::string directory, GLuint S_WRAP = GL_REPEAT, GLuint T_WRAP = GL_REPEAT); 
 	unsigned int loadCubeMap(std::vector<std::string> faces);
 	Mesh genSphere();
 	Mesh genTorus(); // or donut?

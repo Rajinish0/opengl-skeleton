@@ -1,5 +1,7 @@
 #include "stb_image.h"
 #include "funcs.h" 
+#include "perlin.h"
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -9,11 +11,14 @@
 
 
 namespace funcs{
-	unsigned int TextureFromFile(const std::string & path, std::string directory) {
+	unsigned int TextureFromFile(const std::string & path, std::string directory, 
+								 GLuint S_WRAP, GLuint T_WRAP) {
+		std::cout << "LOADING " << path << " dir: " << directory << std::endl;
 		int width, height, nChannels;
 		// std::cout << directory << " " << path << std::endl;
 		unsigned char* data = stbi_load((directory + "/" + path).c_str(), &width, &height, &nChannels, 0);
 		// std::cout << (directory + "/" + path).c_str() << std::endl;
+		// unsigned char* data = stbi_load((path).c_str(), &width, &height, &nChannels, 0);
 		unsigned int id = 1;
 		// std::cout << id << " : " << &id << std::endl;
 		glGenTextures(1, &id);
@@ -31,13 +36,17 @@ namespace funcs{
 
 			glBindTexture(GL_TEXTURE_2D, id);
 			glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, S_WRAP);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, T_WRAP);
 			glGenerateMipmap(GL_TEXTURE_2D);
 
 			stbi_image_free(data);
 		}
 		else
-			std::cout << "Couldn't load texture";
-
+		{
+			std::cerr << "Couldn't load texture" << std::endl;
+			std::cerr << "Path: " << path << " dir: " << directory << std::endl;
+		}
 		return id;
 	}
 
@@ -177,7 +186,7 @@ namespace funcs{
 			indices.push_back(j + (NUM_POINTS - 1) * (NUM_POINTS) + 1);
 			indices.push_back((j + 1) % NUM_POINTS + (NUM_POINTS - 1) * (NUM_POINTS)+1);
 		}
-		Texture tx{ "D:/earth2.png", "texture_diffuse" };
+		Texture tx{ "D:/earth2.png", Texture::DIFFUSE };
 		/*Texture tx{
 			"earth2.png",
 			"D:",
@@ -266,7 +275,7 @@ namespace funcs{
 		Texture tx;
 		tx.id = TextureFromFile("earth2.png", "D:");
 		tx.path = "earth2.png";
-		tx.type = "texture_diffuse";
+		tx.type = Texture::DIFFUSE;
 
 		textures.push_back(tx);
 
@@ -274,4 +283,7 @@ namespace funcs{
 
 		return Mesh(vertices, textures, indices);
 	}
+
+
 }
+

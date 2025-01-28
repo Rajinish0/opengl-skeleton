@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -Wall
+CFLAGS = -Wall -ggdb
 LIBS = -lglfw3 -lopengl32 -lgdi32 -lassimp -lfreetype -lpng -lbz2 -lz -lopenal32 -lsndfile
 SRCDIR = src
 BUILDDIR = build

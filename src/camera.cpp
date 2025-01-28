@@ -79,12 +79,12 @@ void Camera::move(direc d, float dt) {
 
 void Camera::incPitch(float increment) {
 	this->pitch += increment;
-	// this->pitch = funcs::clamp(this->pitch, -89.0f, 89.0f);
+	this->pitch = funcs::clamp(this->pitch, -80.0f, 80.0f);
 }
 
 void Camera::incYaw(float increment) {
 	this->yaw += increment;
-	//this->yaw = funcs::clamp(this->yaw, -360.0f, 360.0f);
+	this->yaw = funcs::clamp(this->yaw, -360.0f, 360.0f);
 }
 
 void Camera::handleMouse(double xPos, double yPos) {
@@ -98,8 +98,10 @@ void Camera::handleMouse(double xPos, double yPos) {
 	float dx = xPos - lxpos;
 	float dy = lypos - yPos;
 
-	yaw += dx * sensitivity;
-	pitch += dy * sensitivity;
+	// yaw += dx * sensitivity;
+	// pitch += dy * sensitivity;
+	incYaw(dx * sensitivity);
+	incPitch(dy * sensitivity);
 
 	if (pitch > 89.0f)
 		pitch = 89.0f;

@@ -1,4 +1,5 @@
 #include "model.h"
+#include "assimp_helper.h"
 
 Model::Model(std::string path) {
 	loadModel(path);
@@ -19,6 +20,7 @@ void Model::loadModel(std::string path) {
 	}
 
 	directory = path.substr(0, path.find_last_of('/'));
+	std::cout << directory << std::endl;
 	processNode(scene->mRootNode, scene);
 
 }
@@ -42,6 +44,8 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 
 	for (int i = 0; i < mesh->mNumVertices; ++i) {
 		Vertex vertex;
+
+		setVertexDefaultData(vertex);
 		glm::vec3 vector(
 			mesh->mVertices[i].x,
 			mesh->mVertices[i].y,
@@ -80,17 +84,55 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 
 	if (mesh->mMaterialIndex >= 0) {
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-		std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+		std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, Texture::DIFFUSE);
 		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 
-		std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+		std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, Texture::SPECULAR);
 		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 	}
+
+	extractBoneWeightForVertices(vertices, mesh, scene);
 
 	return Mesh(vertices, textures, indicies);
 }
 
-std::vector<Texture> Model::loadMaterialTextures(aiMaterial* material, aiTextureType type, std::string typeName) {
+void Model::setVertexBoneData(Vertex& vertex, int boneId, float weight){
+	for (int i =0; i < MAX_BONE_INFLUENCE; ++i){
+		if (vertex.m_JointIDs[i] < 0){
+			vertex.m_Weights[i] = weight;
+			vertex.m_JointIDs[i] = boneId;
+			break;
+		}
+	}
+}
+
+void Model::extractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh *mesh, const aiScene *scene){
+	for (int boneIdx =0; boneIdx < mesh->mNumBones; ++boneIdx){
+		int boneId = -1;
+		std::string boneName = mesh->mBones[boneIdx]->mName.C_Str();
+		if (m_BoneInfoMap.find(boneName) == m_BoneInfoMap.end()){
+			JointInfo newBoneInfo;
+			newBoneInfo.id = m_BoneCounter;
+			newBoneInfo.offset = AssimpHelper::ConvertMatrixToGLMFormat(mesh->mBones[boneIdx]->mOffsetMatrix);
+			m_BoneInfoMap[boneName] = newBoneInfo;
+			boneId = m_BoneCounter;
+			m_BoneCounter++;
+		} else {
+			boneId = m_BoneInfoMap[boneName].id;
+		}
+		assert(boneId != -1);
+		auto weights = mesh->mBones[boneIdx]->mWeights;
+		int numWeights = mesh->mBones[boneIdx]->mNumWeights;
+		for (int i =0; i < numWeights; i++){
+			int vertexId = weights[i].mVertexId;
+			float weight = weights[i].mWeight;
+			assert(vertexId <= vertices.size());
+			setVertexBoneData(vertices[vertexId], boneId, weight);
+		}
+	}
+}
+
+std::vector<Texture> Model::loadMaterialTextures(aiMaterial* material, aiTextureType type, Texture::Type typeName) {
 	std::vector<Texture> textures;
 
 	/*
@@ -101,6 +143,7 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* material, aiTexture
 	for (int i = 0; i < material->GetTextureCount(type); ++i) {
 		aiString str;
 		material->GetTexture(type, i, &str);
+		std::cout << str.C_Str() << std::endl;
 		bool cached = false;
 		for (int j = 0; j < cachedTextures.size(); ++j) {
 			if (std::strcmp(cachedTextures[j].path.data(), str.C_Str()) == 0) {
@@ -111,6 +154,13 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* material, aiTexture
 		}
 		if (!cached) {
 			Texture texture;
+			// std::cout << str.C_Str() << std::endl;
+			// std::string s = str.C_Str();
+			// int i1 = s.find_last_of('/');
+			// std::cout << i1 << std::endl;
+			// std::cout << s.find_last_of('/') <<' ' <<  s.size() << std::endl;
+			// std::cout << s.substr(i1, 27) << std::endl;
+			// std::cout << s << std::endl;
 			texture.id = funcs::TextureFromFile(str.C_Str(), directory);
 			texture.type = typeName;
 			texture.path = str.C_Str();

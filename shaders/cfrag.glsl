@@ -1,4 +1,4 @@
-#version 330 core
+#version 430 core
 
 uniform sampler2D texture_diff1;
 in vec2 texCoord;
