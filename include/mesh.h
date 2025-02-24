@@ -66,12 +66,7 @@ public:
 	Mesh& operator=(Mesh&&) noexcept;
 	void draw(Shader& shader);
 	unsigned int VAO, VBO, EBO;
- 	/*
-	 * TO DO:
-	 * 	this is being called unexpectedly sometimes, need to 
-	 * 	debug this.
-	 */
-//	~Mesh();
+	~Mesh();
 
 private:
 	void setUpMesh();

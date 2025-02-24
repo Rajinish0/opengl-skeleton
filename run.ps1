@@ -1,2 +1,7 @@
 mingw32-make
-./main
+if ($?){
+	echo "build complete, running.."
+	./main
+} else {
+	echo "something went south, good luck debugging man."
+}

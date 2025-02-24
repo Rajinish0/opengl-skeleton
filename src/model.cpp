@@ -6,7 +6,7 @@ Model::Model(std::string path) {
 }
 
 void Model::draw(Shader& shader) {
-	for (Mesh mesh : meshes)
+	for (Mesh& mesh : meshes)
 		mesh.draw(shader);
 }
 
@@ -29,7 +29,7 @@ void Model::loadModel(std::string path) {
 void Model::processNode(aiNode* node, const aiScene* scene) {
 	for (int i = 0; i < node->mNumMeshes; ++i) {
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-		meshes.push_back(processMesh(mesh, scene));
+		meshes.emplace_back(processMesh(mesh, scene));
 	}
 
 	for (int i = 0; i < node->mNumChildren; ++i) {

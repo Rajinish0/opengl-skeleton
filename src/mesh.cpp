@@ -1,4 +1,3 @@
-#pragma once
 #include "Mesh.h"
 #include "funcs.h"
 #include <exception>
@@ -96,11 +95,10 @@ void Mesh::setUpMesh() {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 }
-/*
+
 Mesh::~Mesh(){
 	clearResources();
 }
-*/
 
 void Mesh::clearResources(){
 	if (VAO){
