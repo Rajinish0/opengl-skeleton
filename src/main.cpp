@@ -200,7 +200,8 @@ int main() {
 	Animator animator(&danceAnimation);
 	std::cout << "ANIMATOR LOADED" << std::endl;
 
-	float dT, lF;
+	float dT = 0.0f, 
+		  lF = 0.0f;
 
 	while (!window.shouldClose())
 	{
